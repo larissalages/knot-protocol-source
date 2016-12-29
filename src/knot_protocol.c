@@ -177,3 +177,113 @@ int knot_schema_is_valid(uint16_t type_id, uint8_t value_type, uint8_t unit)
 	return KNOT_INVALID_SCHEMA;
 }
 
+/*
+ * If the evt_flag for a flag is not set and the notify flag for the same flag
+ * is set, returns error.
+ */
+int notify_not_valid(uint8_t evt_flags, uint8_t ntf_flags)
+{
+	/* If any flag is set */
+	if(evt_flags | KNOT_EVT_FLAG_NONE) {
+		if(!(evt_flags & KNOT_EVT_FLAG_TIME))
+			if(ntf_flags & KNOT_EVT_FLAG_TIME)
+				/*
+				 * TODO: DEFINE KNOT_CONFIG ERRORS IN PROTOCOL
+				 */
+				return KNOT_ERROR_UNKNOWN;
+		if(!(evt_flags & KNOT_EVT_FLAG_LOWER_THRESHOLD))
+			if(ntf_flags & KNOT_EVT_FLAG_LOWER_THRESHOLD)
+				/*
+				 * TODO: DEFINE KNOT_CONFIG ERRORS IN PROTOCOL
+				 */
+				return KNOT_ERROR_UNKNOWN;
+		if(!(evt_flags & KNOT_EVT_FLAG_UPPER_THRESHOLD))
+			if(ntf_flags & KNOT_EVT_FLAG_UPPER_THRESHOLD)
+				/*
+				 * TODO: DEFINE KNOT_CONFIG ERRORS IN PROTOCOL
+				 */
+				return KNOT_ERROR_UNKNOWN;
+		if(!(evt_flags & KNOT_EVT_FLAG_CHANGE))
+			if(ntf_flags & KNOT_EVT_FLAG_CHANGE)
+				/*
+				 * TODO: DEFINE KNOT_CONFIG ERRORS IN PROTOCOL
+				 */
+				return KNOT_ERROR_UNKNOWN;
+	} else {
+		if(ntf_flags)
+			/*
+			 * TODO: DEFINE KNOT_CONFIG ERRORS IN PROTOCOL
+			 */
+			return KNOT_ERROR_UNKNOWN;
+	}
+
+	return KNOT_SUCCESS;
+}
+
+
+int knot_config_is_valid(uint8_t event_flags, uint16_t time_sec,
+			uint8_t notify_flags, knot_value_types *lower_limit,
+			knot_value_types *upper_limit)
+{
+
+	int diff_int, diff_dec, err;
+
+	/* Check if event_flags are valid */
+	if ((event_flags | KNOT_EVT_FLAG_NONE) &&
+		!(event_flags & KNOT_EVENT_FLAG_MAX))
+		/*
+		 * TODO: DEFINE KNOT_CONFIG ERRORS IN PROTOCOL
+		 * KNOT_INVALID_CONFIG in new protocol
+		 */
+		return KNOT_ERROR_UNKNOWN;
+
+	/* Check if notify_flags are valid */
+	err = notify_not_valid(event_flags, notify_flags);
+
+	if(err)
+		return err;
+
+	/* Check consistency of time_sec */
+	if (event_flags & KNOT_EVT_FLAG_TIME) {
+		if (time_sec == 0)
+			/*
+			 * TODO: DEFINE KNOT_CONFIG ERRORS IN PROTOCOL
+			 * KNOT_INVALID_CONFIG in new protocol
+			 */
+			return KNOT_ERROR_UNKNOWN;
+	} else {
+		if (time_sec > 0)
+			/*
+			 * TODO: DEFINE KNOT_CONFIG ERRORS IN PROTOCOL
+			 * KNOT_INVALID_CONFIG in new protocol
+			 */
+			return KNOT_ERROR_UNKNOWN;
+	}
+
+	/* Check consistency of limits */
+	if (event_flags & (KNOT_EVT_FLAG_LOWER_THRESHOLD |
+		KNOT_EVT_FLAG_UPPER_THRESHOLD)) {
+
+		diff_int = upper_limit->val_n.value_int -
+			lower_limit->val_n.value_int;
+
+		diff_dec = upper_limit->val_n.value_dec -
+			lower_limit->val_n.value_dec;
+
+		if (diff_int < 0)
+			/*
+			 * TODO: DEFINE KNOT_CONFIG ERRORS IN PROTOCOL
+			 * KNOT_INVALID_CONFIG in new protocol
+			 */
+			return KNOT_ERROR_UNKNOWN;
+		else if (diff_int == 0 && diff_dec <= 0)
+			/*
+			 * TODO: DEFINE KNOT_CONFIG ERRORS IN PROTOCOL
+			 * KNOT_INVALID_CONFIG in new protocol
+			 */
+			return KNOT_ERROR_UNKNOWN;
+	}
+
+	return KNOT_SUCCESS;
+
+}

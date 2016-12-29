@@ -215,5 +215,16 @@ int knot_type_id_is_logic(uint16_t type_id);
  */
 int knot_schema_is_valid(uint16_t type_id, uint8_t value_type, uint8_t unit);
 
+/*
+ * Helper function to verify if notify is valid
+ */
+int notify_not_valid(uint8_t evt_flags, uint8_t ntf_flags);
+
+/*
+ * Helper function to validate the config
+ */
+int knot_config_is_valid(uint8_t event_flags, uint16_t time_sec,
+			uint8_t notify_flags, knot_value_types *lower_limit,
+			knot_value_types *upper_limit);
 
 #endif //KNOT_PROTOCOL_H
