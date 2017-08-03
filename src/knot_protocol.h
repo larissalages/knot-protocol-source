@@ -73,6 +73,10 @@
 #define KNOT_MSG_COMMAND			0x22
 #define KNOT_MSG_CONFIG				0x24
 #define KNOT_MSG_CONFIG_RESP			0x25
+#define KNOT_MSG_CONFIG_END			0x26
+#define KNOT_MSG_CONFIG_END_RESP		0x27
+
+
 
 // KNoT event flags passed by config messages
 #define KNOT_EVT_FLAG_NONE			0x00
